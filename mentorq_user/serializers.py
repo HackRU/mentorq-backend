@@ -34,8 +34,8 @@ class MentorqTokenObtainSerializer(serializers.Serializer):
         # the result of authentication is returned
         if self.user is None:
             raise exceptions.AuthenticationFailed(
-                _("No account found with the given email and token"),
-                "no_account"
+                    _("No account found with the given email and token"),
+                    "no_account"
             )
         lcs_user = self.user.get_lcs_user()
         MentorStatus = lcs_user[1].profile()["role"]["mentor"]

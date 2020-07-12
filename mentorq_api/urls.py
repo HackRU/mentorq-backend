@@ -1,6 +1,6 @@
 from django.urls import path, include
 
-from .views import TicketList, TicketDetail, TicketStats
+from mentorq_api.views import TicketList, TicketDetail, TicketStats
 
 urlpatterns = [
     # endpoint for Mentorq authentication

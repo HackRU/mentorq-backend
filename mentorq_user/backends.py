@@ -24,7 +24,7 @@ class MentorqUserBackend:
 
         # if there is no error, a Mentorq user is fetched (to be used for JWT)
         user, created = MentorqUser.objects.update_or_create(email=email, defaults={'lcs_token': lcs_token})
-    
+
         # finally, the associated user is returned
         return user
 

@@ -5,8 +5,8 @@ from rest_framework import generics, mixins
 from rest_framework.exceptions import NotAuthenticated
 from rest_framework.response import Response
 
-from mentorq_backend.models import Ticket
-from .serializers import TicketSerializer, TicketEditableSerializer
+from mentorq_api.models import Ticket
+from mentorq_api.serializers import TicketSerializer, TicketEditableSerializer
 
 
 # extracts the request from any of the http request methods and validates that the lcs_token hasn't expired
@@ -91,17 +91,17 @@ class TicketStats(generics.GenericAPIView):
             raise NotAuthenticated(detail="You do not have sufficient privileges to access tickets stats")
         claimed_datetime_deltas = list(map(lambda ticket: ticket.claimed_datetime - ticket.created_datetime,
                                            Ticket.objects.exclude(claimed_datetime__isnull=True).only(
-                                               "created_datetime",
-                                               "claimed_datetime")))
+                                                   "created_datetime",
+                                                   "claimed_datetime")))
         num_of_claimed_datetime_deltas = len(claimed_datetime_deltas)
         closed_datetime_deltas = list(map(lambda ticket: ticket.closed_datetime - ticket.created_datetime,
                                           Ticket.objects.exclude(closed_datetime__isnull=True).only("created_datetime",
                                                                                                     "closed_datetime")))
         num_of_closed_datetime_deltas = len(closed_datetime_deltas)
         average_claimed_datetime = (sum(claimed_datetime_deltas, timedelta(
-            0)) / num_of_claimed_datetime_deltas) if num_of_claimed_datetime_deltas > 0 else None
+                0)) / num_of_claimed_datetime_deltas) if num_of_claimed_datetime_deltas > 0 else None
         average_closed_datetime = (sum(closed_datetime_deltas, timedelta(
-            0)) / num_of_closed_datetime_deltas) if num_of_closed_datetime_deltas > 0 else None
+                0)) / num_of_closed_datetime_deltas) if num_of_closed_datetime_deltas > 0 else None
         return Response(
-            {"average_claimed_datetime_seconds": average_claimed_datetime,
-             "average_closed_datetime_seconds": average_closed_datetime})
+                {"average_claimed_datetime_seconds": average_claimed_datetime,
+                 "average_closed_datetime_seconds": average_closed_datetime})

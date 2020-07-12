@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from .models import Ticket
+from mentorq_api.models import Ticket
 
 # Register your models here.
 
