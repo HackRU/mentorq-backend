@@ -1,6 +1,5 @@
+from mentorq_api.models import Ticket
 from rest_framework import serializers
-
-from mentorq_backend.models import Ticket
 
 
 # returns the relevant fields from a Ticket object
