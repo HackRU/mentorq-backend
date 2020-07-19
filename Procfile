@@ -1,1 +1,1 @@
-web: gunicorn myproject.wsgi
+web: gunicorn mentorq_main.wsgi
