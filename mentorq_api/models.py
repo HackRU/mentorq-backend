@@ -1,6 +1,5 @@
 from django.db import models
 
-# TODO: limit ticket creation to 5 per user
 # represents a help ticket
 from django.utils import timezone
 
@@ -54,3 +53,22 @@ class Ticket(models.Model):
 
     def __str__(self):
         return self.title
+
+
+class Feedback(models.Model):
+    class Rating(models.IntegerChoices):
+        VERY_DISSATISFIED = 1
+        DISSATISFIED = 2
+        NEUTRAL = 3
+        SATISFIED = 4
+        VERY_SATISFIED = 5
+    # RATING_CHOICES = [
+    #     (VERY_DISSATISFIED, "Very Dissatisfied"),
+    #     (DISSATISFIED, "Dissatisfied"),
+    #     (NEUTRAL, "Neutral"),
+    #     (SATISFIED, "Satisfied"),
+    #     (VERY_SATISFIED, "Very Satisfied")
+    # ]
+    ticket = models.ForeignKey(to=Ticket, on_delete=models.CASCADE, editable=False)
+    rating = models.SmallIntegerField(choices=Rating.choices, editable=False)
+    comments = models.CharField(max_length=255, editable=False)

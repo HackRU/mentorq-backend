@@ -1,5 +1,6 @@
-from mentorq_api.models import Ticket
 from rest_framework import serializers
+
+from mentorq_api.models import Ticket, Feedback
 
 
 # returns the relevant fields from a Ticket object
@@ -21,3 +22,9 @@ class TicketEditableSerializer(serializers.HyperlinkedModelSerializer):
         ]
         read_only_fields = ["id", "owner_email", "title", "comment", "contact", "location", "created_datetime",
                             "claimed_datetime", "closed_datetime"]
+
+
+class FeedbackSerializer(serializers.HyperlinkedModelSerializer):
+    class Meta:
+        model = Feedback
+        fields = ["ticket", "rating", "comments"]

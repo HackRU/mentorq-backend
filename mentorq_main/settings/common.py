@@ -1,7 +1,8 @@
 import os
+import pathlib
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
-BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+BASE_DIR = str(pathlib.Path(__file__).absolute().parent.parent.parent)
 
 # Application definition
 INSTALLED_APPS = [
@@ -34,8 +35,7 @@ ROOT_URLCONF = 'mentorq_main.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [os.path.join(BASE_DIR, 'templates')]
-        ,
+        'DIRS': [os.path.join(BASE_DIR, 'templates')],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -105,7 +105,6 @@ CORS_ORIGIN_ALLOW_ALL = True
 CORS_ALLOW_CREDENTIALS = False
 
 CORS_ALLOW_METHODS = [
-    'DELETE',
     'GET',
     'OPTIONS',
     'PATCH',
