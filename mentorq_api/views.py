@@ -27,10 +27,9 @@ class TicketViewSet(LCSAuthenticatedMixin, mixins.CreateModelMixin, mixins.Retri
     queryset = Ticket.objects.all()
     serializer_class = TicketSerializer
 
-    # TODO: test POST requests
     def get_serializer_class(self):
         serializer_class = self.serializer_class
-        if self.request.method == "PATCH":
+        if self.request.method in ("PATCH", "PUT"):
             serializer_class = TicketEditableSerializer
         return serializer_class
 
@@ -44,6 +43,11 @@ class TicketViewSet(LCSAuthenticatedMixin, mixins.CreateModelMixin, mixins.Retri
         if user_roles["mentor"]:
             queryset = queryset.exclude(status="CLOSED")
         return queryset
+
+    def perform_create(self, serializer):
+        if self.kwargs.get("lcs_profile")["email"] != serializer.validated_data["owner_email"]:
+            raise PermissionDenied("You cannot create a ticket on behalf of another user")
+        super().perform_create(serializer)
 
     @action(methods=["get"], detail=False, url_path="stats", url_name="stats")
     def get_stats(self, request, *args, **kwargs):
@@ -76,11 +80,11 @@ class FeedbackViewSet(LCSAuthenticatedMixin, mixins.CreateModelMixin, mixins.Ret
     serializer_class = FeedbackSerializer
 
     def retrieve(self, request, *args, **kwargs):
-        if not kwargs["lsc_profile"]["role"]["director"]:
+        if not kwargs["lcs_profile"]["role"]["director"]:
             raise PermissionDenied
         return super().retrieve(request, *args, **kwargs)
 
     def list(self, request, *args, **kwargs):
-        if not kwargs["lsc_profile"]["role"]["director"]:
+        if not kwargs["lcs_profile"]["role"]["director"]:
             raise PermissionDenied
         return super().list(request, *args, **kwargs)

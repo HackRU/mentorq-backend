@@ -38,8 +38,8 @@ class MentorqTokenObtainSerializer(serializers.Serializer):
                     "no_account"
             )
         lcs_user = self.user.get_lcs_user()
-        MentorStatus = lcs_user[1].profile()["role"]["mentor"]
-        DirectorStatus = lcs_user[1].profile()["role"]["director"]
+        MentorStatus = lcs_user.profile()["role"]["mentor"]
+        DirectorStatus = lcs_user.profile()["role"]["director"]
 
         return {"mentor": MentorStatus,
                 "director": DirectorStatus}

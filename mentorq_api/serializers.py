@@ -24,7 +24,7 @@ class TicketEditableSerializer(serializers.HyperlinkedModelSerializer):
                             "claimed_datetime", "closed_datetime"]
 
 
-class FeedbackSerializer(serializers.HyperlinkedModelSerializer):
+class FeedbackSerializer(serializers.ModelSerializer):
     class Meta:
         model = Feedback
-        fields = ["ticket", "rating", "comments"]
+        fields = ["id", "rating", "comments"]
