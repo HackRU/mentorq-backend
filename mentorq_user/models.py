@@ -1,10 +1,9 @@
-from typing import Union, Tuple
-
 from django.contrib.auth.base_user import AbstractBaseUser
 from django.contrib.auth.models import PermissionsMixin
 from django.db import models
 from django.utils.translation import ugettext_lazy as _
 from lcs_client import InternalServerError, RequestError, CredentialError, User
+from rest_framework.exceptions import AuthenticationFailed
 
 from mentorq_user.managers import MentorqUserManager
 
@@ -27,10 +26,12 @@ class MentorqUser(AbstractBaseUser, PermissionsMixin):
         return self.email
 
     # method used to create a lcs-client User object from a Mentorq user
-    def get_lcs_user(self) -> Tuple[bool, Union[User, str]]:
+    def get_lcs_user(self):
         try:
-            return True, User(email=self.email, token=self.lcs_token)
+            return User(email=self.email, token=self.lcs_token)
         except (InternalServerError, RequestError, CredentialError) as e:
-            return False, _("The following error occurred during authentication: " + e.response.json()["body"])
+            raise AuthenticationFailed(detail=
+                                       _("The following error occurred during authentication: " + e.response.json()[
+                                           "body"]))
         except:
-            return False, _("There was an authentication error. Please try again later")
+            raise AuthenticationFailed(detail=_("There was an authentication error. Please try again later"))

@@ -1,7 +1,5 @@
 from django.db import models
 
-# TODO: limit ticket creation to 5 per user
-# represents a help ticket
 from django.utils import timezone
 
 
@@ -50,7 +48,21 @@ class Ticket(models.Model):
                     self.closed_datetime = timezone.now()
         except self.DoesNotExist:
             pass
-        super(Ticket, self).save(*args, **kwargs)
+        super().save(*args, **kwargs)
 
     def __str__(self):
         return self.title
+
+
+class Rating(models.IntegerChoices):
+    VERY_DISSATISFIED = 1
+    DISSATISFIED = 2
+    NEUTRAL = 3
+    SATISFIED = 4
+    VERY_SATISFIED = 5
+
+
+class Feedback(models.Model):
+    id = models.OneToOneField(to=Ticket, primary_key=True, on_delete=models.CASCADE)
+    rating = models.SmallIntegerField(choices=Rating.choices)
+    comments = models.CharField(max_length=255)
