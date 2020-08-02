@@ -78,6 +78,14 @@ class FeedbackViewSet(LCSAuthenticatedMixin, mixins.CreateModelMixin, mixins.Ret
     queryset = Feedback.objects.all()
     serializer_class = FeedbackSerializer
 
+    def create(self, request, *args, **kwargs):
+        referenced_ticket = Ticket.objects.get(id=request.data["id"])
+        if referenced_ticket.owner_email != kwargs["lcs_profile"]["email"]:
+            raise PermissionDenied
+        if referenced_ticket.status != Ticket.StatusType.CLOSED:
+            raise PermissionDenied("Ticket must be closed to submit feedback")
+        return super().create(request, *args, **kwargs)
+
     def retrieve(self, request, *args, **kwargs):
         if not kwargs["lcs_profile"]["role"]["director"]:
             raise PermissionDenied
