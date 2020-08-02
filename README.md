@@ -97,3 +97,53 @@ Returns a JSON with:
    "average_claimed_datetime_seconds": average_claimed_datetime,<br>
    "average_closed_datetime_seconds": average_closed_datetime<br>
 }<br>
+
+#### /feedback
+Fields:  
+id = id of the ticket associated with feedback  
+ticket_url = the direct url to the referenced ticket  
+rating = the numerical rating of the feedback  
+comments = any additional comments part of the feedback  
+
+**\[GET]**  
+**REQUIRED: director permissions in LCS**  
+Obtain the list of all the feedbacks submitted  
+Returns a list of JSON objects, each representing a feedback.  
+Example feedback JSON schema -
+```
+{
+    "id": ...,
+    "ticket_url": ...,
+    "rating": ...,
+    "comments": ...
+}
+```
+
+
+**\[POST]**  
+**REQUIRED: creator of ticket and feedback must be same**  
+Creates a feedback  
+Expects a JSON with following schema:
+```
+{
+    "id": ...,
+    "rating": ...,
+    "comments": ...
+}
+```
+
+
+#### /feedback/\<id>
+**\[GET]**  
+**REQUIRED: director permissions in LCS**  
+Obtains the details about a specific feedback, identified by the closed ticket's id  
+Returns the JSON for a feedback
+Example feedback JSON schema - 
+```
+{
+    "id": ...,
+    "ticket_url": ...,
+    "rating": ...,
+    "comments": ...
+}
+```
