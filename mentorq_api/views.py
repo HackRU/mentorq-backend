@@ -1,4 +1,3 @@
-# generic views
 from datetime import timedelta
 
 from rest_framework import mixins, viewsets
@@ -14,7 +13,7 @@ class LCSAuthenticatedMixin:
     def initial(self, request, *args, **kwargs):
         if not request.user.is_authenticated:
             raise NotAuthenticated
-        # the lcs credentials (email, token) are given to lcs-client to obtain a lcs user
+        # the lcs credentials (token) are given to lcs-client to obtain a lcs user
         lcs_user = request.user.get_lcs_user()
         # the lcs profile is stored in as arguments
         self.kwargs["lcs_profile"] = lcs_user.profile()
@@ -41,7 +40,7 @@ class TicketViewSet(LCSAuthenticatedMixin, mixins.CreateModelMixin, mixins.Retri
         if not (user_roles["organizer"] or user_roles["director"] or user_roles["mentor"]):
             queryset = queryset.filter(owner_email=lcs_profile["email"])
         if user_roles["mentor"]:
-            queryset = queryset.exclude(status="CLOSED")
+            queryset = queryset.exclude(status=Ticket.StatusType.CLOSED)
         return queryset
 
     def perform_create(self, serializer):
