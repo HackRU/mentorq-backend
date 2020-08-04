@@ -14,7 +14,7 @@ class MentorqUserBackend:
             return None
         # tries validating the token
         try:
-            validate_token(email, lcs_token)
+            validate_token(token=lcs_token)
         except (InternalServerError, RequestError, CredentialError) as e:
             msg = _("Invalid credentials provided. Error: ")
             raise exceptions.AuthenticationFailed(msg + e.response.json()["body"])

@@ -1,11 +1,14 @@
 from django.db import models
-
 from django.utils import timezone
 
 
 class Ticket(models.Model):
-    # pre-defined statuses of the ticket
-    STATUS_TYPES = ["OPEN", "CLOSED", "CLAIMED", "CANCELLED"]
+    class StatusType(models.TextChoices):
+        OPEN = "OPEN"
+        CLOSED = "CLOSED"
+        CLAIMED = "CLAIMED"
+        CANCELLED = "CANCELLED"
+
     # the email of the person who created the ticket
     owner_email = models.EmailField()
     # the name of the mentor who has claimed this ticket
@@ -13,9 +16,9 @@ class Ticket(models.Model):
     # the email of the mentor who has claimed this ticket
     mentor_email = models.EmailField(blank=True)
     # the status of the ticket (one of the pre-defined types listed above)
-    status = models.CharField(max_length=max(map(len, STATUS_TYPES)),
-                              choices=[(st_ty, st_ty) for st_ty in STATUS_TYPES],
-                              default="OPEN")
+    status = models.CharField(max_length=max(map(lambda st: len(st[0]), StatusType.choices)),
+                              choices=StatusType.choices,
+                              default=StatusType.OPEN)
     # the title of the ticket
     title = models.CharField(max_length=255)
     # the comment/details of the ticket
@@ -40,11 +43,11 @@ class Ticket(models.Model):
         try:
             current_ticket = Ticket.objects.get(pk=self.pk)
             current_status = current_ticket.status
-            if self.status == "CLAIMED":
-                if current_status == "OPEN":
+            if self.status == Ticket.StatusType.CLAIMED:
+                if current_status == Ticket.StatusType.OPEN:
                     self.claimed_datetime = timezone.now()
-            elif self.status == "CLOSED":
-                if current_status == "OPEN" or current_status == "CLAIMED":
+            elif self.status == Ticket.StatusType.CLOSED:
+                if current_status == Ticket.StatusType.OPEN or current_status == Ticket.StatusType.CLAIMED:
                     self.closed_datetime = timezone.now()
         except self.DoesNotExist:
             pass
@@ -66,3 +69,7 @@ class Feedback(models.Model):
     id = models.OneToOneField(to=Ticket, primary_key=True, on_delete=models.CASCADE)
     rating = models.SmallIntegerField(choices=Rating.choices)
     comments = models.CharField(max_length=255)
+
+    class Meta:
+        verbose_name = "Feedback"
+        verbose_name_plural = "Feedback"
