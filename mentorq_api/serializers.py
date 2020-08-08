@@ -30,3 +30,9 @@ class FeedbackSerializer(serializers.ModelSerializer):
     class Meta:
         model = Feedback
         fields = ["id", "ticket_url", "rating", "comments"]
+
+
+class SlackDMSerializer(serializers.Serializer):
+    """Your data serializer, define your fields here."""
+    other_email = serializers.CharField(max_length=250)
+
