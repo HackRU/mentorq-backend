@@ -107,5 +107,10 @@ class SlackViewSet(LCSAuthenticatedMixin, mixins.CreateModelMixin, viewsets.Gene
         lcs_user = self.kwargs.get("lcs_user")
         try:
             return Response(lcs_user.create_dm_link_to(self.request.data["other_email"]))
-        except lcs_client.CredentialError as e:
-            return Response(e.response)
+        except lcs_client.CredentialError as c:
+            return Response(c.response)
+        except lcs_client.RequestError as r:
+            return Response(r.response)
+        except lcs_client.InternalServerError as i:
+            return Response(i.response)
+
