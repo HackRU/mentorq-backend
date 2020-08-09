@@ -1,0 +1,13 @@
+language: python
+
+#Set up the basic environment to be python
+python:
+  - "3.6.6"
+
+install:
+    #Install all the requirements
+    - pip install -r requirements.txt
+
+script:
+  # Run tests
+  - python manage.py test tests/
