@@ -2,11 +2,12 @@ from datetime import timedelta
 
 from rest_framework import mixins, viewsets
 from rest_framework.decorators import action
-from rest_framework.exceptions import PermissionDenied, NotAuthenticated
+from rest_framework.exceptions import PermissionDenied, NotAuthenticated, NotFound
 from rest_framework.response import Response
 
 from mentorq_api.models import Ticket, Feedback
-from mentorq_api.serializers import TicketSerializer, TicketEditableSerializer, FeedbackSerializer
+from mentorq_api.serializers import TicketSerializer, TicketEditableSerializer, FeedbackSerializer, \
+    FeedbackEditableSerializer
 
 
 class LCSAuthenticatedMixin:
@@ -76,20 +77,23 @@ class FeedbackViewSet(LCSAuthenticatedMixin, mixins.CreateModelMixin, mixins.Ret
     queryset = Feedback.objects.all()
     serializer_class = FeedbackSerializer
 
-    def create(self, request, *args, **kwargs):
-        referenced_ticket = Ticket.objects.get(id=request.data["id"])
-        if referenced_ticket.owner_email != kwargs["lcs_profile"]["email"]:
-            raise PermissionDenied
-        if referenced_ticket.status != Ticket.StatusType.CLOSED:
+    def get_serializer_class(self):
+        serializer_class = self.serializer_class
+        if self.request.method in ("PATCH", "PUT"):
+            serializer_class = FeedbackEditableSerializer
+        return serializer_class
+
+    def get_queryset(self):
+        lcs_profile = self.kwargs.get("lcs_profile")
+        user_roles = lcs_profile["role"]
+        queryset = super().get_queryset()
+        if not user_roles["director"]:
+            queryset = queryset.filter(ticket__owner_email=lcs_profile["email"])
+        return queryset
+
+    def perform_create(self, serializer):
+        if serializer.validated_data["ticket"].owner_email != self.kwargs["lcs_profile"]["email"]:
+            raise NotFound
+        if serializer.validated_data["ticket"].status != Ticket.StatusType.CLOSED:
             raise PermissionDenied("Ticket must be closed to submit feedback")
-        return super().create(request, *args, **kwargs)
-
-    def retrieve(self, request, *args, **kwargs):
-        if not kwargs["lcs_profile"]["role"]["director"]:
-            raise PermissionDenied
-        return super().retrieve(request, *args, **kwargs)
-
-    def list(self, request, *args, **kwargs):
-        if not kwargs["lcs_profile"]["role"]["director"]:
-            raise PermissionDenied
-        return super().list(request, *args, **kwargs)
+        return super().perform_create(serializer)
