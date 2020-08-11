@@ -112,7 +112,7 @@ Returns a list of JSON objects, each representing a feedback.
 Example feedback JSON schema -
 ```
 {
-    "id": ...,
+    "ticket": ...,
     "ticket_url": ...,
     "rating": ...,
     "comments": ...
@@ -126,14 +126,14 @@ Creates a feedback
 Expects a JSON with following schema:
 ```
 {
-    "id": ...,
+    "ticket": ...,
     "rating": ...,
     "comments": ...
 }
 ```
 
 
-#### /feedback/\<id>
+#### /feedback/\<ticket_id>
 **\[GET]**  
 **REQUIRED: director permissions in LCS**  
 Obtains the details about a specific feedback, identified by the closed ticket's id  
@@ -141,7 +141,7 @@ Returns the JSON for a feedback
 Example feedback JSON schema - 
 ```
 {
-    "id": ...,
+    "ticket": ...,
     "ticket_url": ...,
     "rating": ...,
     "comments": ...
