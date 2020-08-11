@@ -66,7 +66,7 @@ class Rating(models.IntegerChoices):
 
 
 class Feedback(models.Model):
-    id = models.OneToOneField(to=Ticket, primary_key=True, on_delete=models.CASCADE)
+    ticket = models.OneToOneField(to=Ticket, primary_key=True, on_delete=models.CASCADE)
     rating = models.SmallIntegerField(choices=Rating.choices)
     comments = models.CharField(max_length=255)
 

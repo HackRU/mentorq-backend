@@ -29,4 +29,4 @@ class FeedbackSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Feedback
-        fields = ["id", "ticket_url", "rating", "comments"]
+        fields = ["ticket", "ticket_url", "rating", "comments"]
