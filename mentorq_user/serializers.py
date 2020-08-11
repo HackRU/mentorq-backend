@@ -37,7 +37,7 @@ class MentorqTokenObtainSerializer(serializers.Serializer):
                     _("No account found with the given email and token"),
                     "no_account"
             )
-        lcs_user = self.user.get_lcs_user()
+        lcs_user = self.user.lcs_user
         MentorStatus = lcs_user.profile()["role"]["mentor"]
         DirectorStatus = lcs_user.profile()["role"]["director"]
 

@@ -13,10 +13,8 @@ class LCSAuthenticatedMixin:
     def initial(self, request, *args, **kwargs):
         if not request.user.is_authenticated:
             raise NotAuthenticated
-        # the lcs credentials (token) are given to lcs-client to obtain a lcs user
-        lcs_user = request.user.get_lcs_user()
         # the lcs profile is stored in as arguments
-        self.kwargs["lcs_profile"] = lcs_user.profile()
+        self.kwargs["lcs_profile"] = request.user.lcs_profile
         return super().initial(request, *args, **kwargs)
 
 
