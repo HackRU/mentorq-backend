@@ -41,3 +41,12 @@ class FeedbackSerializer(serializers.ModelSerializer):
     class Meta:
         model = Feedback
         fields = ["ticket", "ticket_url", "rating", "comments"]
+
+
+class FeedbackEditableSerializer(serializers.ModelSerializer):
+    ticket_url = serializers.HyperlinkedIdentityField(view_name="ticket-detail", source="url")
+
+    class Meta:
+        model = Feedback
+        fields = ["ticket", "ticket_url", "rating", "comments"]
+        read_only_fields = ["ticket", "ticket_url"]
