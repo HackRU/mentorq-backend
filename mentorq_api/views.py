@@ -1,5 +1,6 @@
 from datetime import timedelta
 
+from django.db.models import Avg
 from rest_framework import mixins, viewsets
 from rest_framework.decorators import action
 from rest_framework.exceptions import PermissionDenied, NotAuthenticated, NotFound
@@ -17,6 +18,7 @@ class LCSAuthenticatedMixin:
         # the lcs profile is stored in as arguments
         self.kwargs["lcs_profile"] = request.user.lcs_profile
         return super().initial(request, *args, **kwargs)
+
 
 # view for the /tickets endpoint
 class TicketViewSet(LCSAuthenticatedMixin, mixins.CreateModelMixin, mixins.RetrieveModelMixin, mixins.ListModelMixin,
@@ -75,6 +77,7 @@ class FeedbackViewSet(LCSAuthenticatedMixin, mixins.CreateModelMixin, mixins.Ret
                       mixins.UpdateModelMixin, viewsets.GenericViewSet):
     queryset = Feedback.objects.all()
     serializer_class = FeedbackSerializer
+    LEADERBOARD_DEFAULT_SIZE = 5
 
     def get_serializer_class(self):
         serializer_class = self.serializer_class
@@ -98,3 +101,16 @@ class FeedbackViewSet(LCSAuthenticatedMixin, mixins.CreateModelMixin, mixins.Ret
         if not serializer.validated_data["ticket"].mentor_email:
             raise PermissionDenied("Cannot leave feedback for a ticket with no mentor")
         return super().perform_create(serializer)
+
+    @action(methods=["get"], detail=False, url_path="leaderboard", url_name="leaderboard")
+    def get_leaderboard(self, request, *args, **kwargs):
+        limit = int(self.request.query_params.get("limit", FeedbackViewSet.LEADERBOARD_DEFAULT_SIZE))
+        queryset = Feedback.objects.values("ticket__mentor_email") \
+            .annotate(average_rating=Avg("rating")) \
+            .order_by("-average_rating")
+        queryset = queryset[:min(len(queryset), limit)]
+        leaderboard = []
+        for elem in queryset:
+            mentor = Ticket.objects.filter(mentor_email__exact=elem["ticket__mentor_email"])[0].mentor
+            leaderboard.append({"mentor": mentor, "average_rating": elem["average_rating"]})
+        return Response(leaderboard, content_type="application/json")
