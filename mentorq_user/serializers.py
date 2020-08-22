@@ -52,6 +52,10 @@ class MentorqTokenObtainPairSerializer(MentorqTokenObtainSerializer):
         refresh_token = RefreshToken.for_user(user)
         refresh_token["director"] = user.lcs_profile["role"]["director"]
         refresh_token["mentor"] = user.lcs_profile["role"]["mentor"]
+        name = user.lcs_profile["first_name"]
+        if user.lcs_profile["last_name"]:
+            name += " " + user.lcs_profile["last_name"]
+        refresh_token["name"] = name
         return refresh_token
 
     # method that validates the data using the parent class, then the access
