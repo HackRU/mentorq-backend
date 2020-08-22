@@ -18,7 +18,6 @@ class LCSAuthenticatedMixin:
         self.kwargs["lcs_profile"] = request.user.lcs_profile
         return super().initial(request, *args, **kwargs)
 
-
 # view for the /tickets endpoint
 class TicketViewSet(LCSAuthenticatedMixin, mixins.CreateModelMixin, mixins.RetrieveModelMixin, mixins.ListModelMixin,
                     mixins.UpdateModelMixin, viewsets.GenericViewSet):
@@ -96,4 +95,6 @@ class FeedbackViewSet(LCSAuthenticatedMixin, mixins.CreateModelMixin, mixins.Ret
             raise NotFound
         if serializer.validated_data["ticket"].status != Ticket.StatusType.CLOSED:
             raise PermissionDenied("Ticket must be closed to submit feedback")
+        if not serializer.validated_data["ticket"].mentor_email:
+            raise PermissionDenied("Cannot leave feedback for a ticket with no mentor")
         return super().perform_create(serializer)
