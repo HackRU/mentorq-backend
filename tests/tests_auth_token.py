@@ -3,6 +3,8 @@ import os
 # importing the requests library
 import requests
 import json
+import jwt
+from mentorq_main.settings.local import SECRET_KEY
 
 '''
 Once we receive test email and password information we will replace them within the respective
@@ -59,8 +61,8 @@ class AuthTestCase(TestCase):
         # test the mentorq backend
         mentorq_result = connect_to_mentorq(email, auth_token)
         mentorq_json = mentorq_result.json()
-        print("Successfully recognized user correctly")
-
+        jwt_data = jwt.decode(mentorq_json["refresh"], SECRET_KEY)
+        print("Successfully recognized user")
 
     '''
      Tests if we will be able to correctly identify someone as a mentor within LCS via mentorq
@@ -81,8 +83,9 @@ class AuthTestCase(TestCase):
         # test the mentorq backend
         mentorq_result = connect_to_mentorq(email, authToken)
         mentorq_json = mentorq_result.json()
-        assert mentorq_json['mentor']
-        print("Successfully recognized mentor correctly")
+        jwt_data = jwt.decode(mentorq_json["refresh"], SECRET_KEY)
+        assert jwt_data['mentor']
+        print("Successfully recognized mentor")
 
     '''
      Tests if we will be able to correctly identify someone as a director within LCS via mentorq
@@ -103,6 +106,6 @@ class AuthTestCase(TestCase):
         # test the mentorq backend
         mentorq_result = connect_to_mentorq(email, auth_token)
         mentorq_json = mentorq_result.json()
-        assert mentorq_json['director']
-        print("Successfully recognized director correctly")
-
+        jwt_data = jwt.decode(mentorq_json['refresh'], SECRET_KEY)
+        assert jwt_data['director']
+        print("Successfully recognized director")
