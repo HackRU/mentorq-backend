@@ -24,7 +24,7 @@ class Ticket(models.Model):
     # the comment/details of the ticket
     comment = models.CharField(max_length=255, blank=True)
     # the contact info of the owner
-    contact = models.CharField(max_length=255)
+    contact = models.CharField(max_length=255, null=True, blank=True)
     # the location of the owner
     location = models.CharField(max_length=255)
     # the datetime when this ticket was created
