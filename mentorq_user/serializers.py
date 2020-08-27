@@ -37,16 +37,11 @@ class MentorqTokenObtainSerializer(serializers.Serializer):
                     _("No account found with the given email and token"),
                     "no_account"
             )
-        lcs_user = self.user.lcs_user
-        MentorStatus = lcs_user.profile()["role"]["mentor"]
-        DirectorStatus = lcs_user.profile()["role"]["director"]
-
-        return {"mentor": MentorStatus,
-                "director": DirectorStatus}
+        return {}
 
     @classmethod
     def get_token(cls, user):
-        raise NotImplementedError('Must implement `get_token` method for `TokenObtainSerializer` subclasses')
+        raise NotImplementedError("Must implement `get_token` method for `TokenObtainSerializer` subclasses")
 
 
 # Implements a custom but identical version of the TokenObtainPairSerializer from simplejwt
@@ -54,7 +49,14 @@ class MentorqTokenObtainPairSerializer(MentorqTokenObtainSerializer):
     # method that fetches a token for a given user
     @classmethod
     def get_token(cls, user):
-        return RefreshToken.for_user(user)
+        refresh_token = RefreshToken.for_user(user)
+        refresh_token["director"] = user.lcs_profile["role"]["director"]
+        refresh_token["mentor"] = user.lcs_profile["role"]["mentor"]
+        name = user.lcs_profile["first_name"]
+        if user.lcs_profile["last_name"]:
+            name += " " + user.lcs_profile["last_name"]
+        refresh_token["name"] = name
+        return refresh_token
 
     # method that validates the data using the parent class, then the access
     # token and its refresh token is fetched and returned
