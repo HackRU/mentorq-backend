@@ -73,6 +73,10 @@ class TicketViewSet(LCSAuthenticatedMixin, mixins.CreateModelMixin, mixins.Retri
             {"average_claimed_datetime_seconds": average_claimed_datetime,
              "average_closed_datetime_seconds": average_closed_datetime})
 
+    @action(methods=["post"], detail=True, url_path="slack-dm", url_name="slack-dm")
+    def get_slack_dm(self, request, *args, **kwargs):
+        pass
+
 
 # view for the /feedback endpoint
 class FeedbackViewSet(LCSAuthenticatedMixin, mixins.CreateModelMixin, mixins.RetrieveModelMixin, mixins.ListModelMixin,
