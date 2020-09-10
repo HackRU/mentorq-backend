@@ -1,24 +1,25 @@
 from datetime import timedelta
 
 import lcs_client
+from django.db.models import Avg
 from rest_framework import mixins, viewsets
 from rest_framework.decorators import action
-from rest_framework.exceptions import PermissionDenied, NotAuthenticated
+from rest_framework.exceptions import PermissionDenied, NotAuthenticated, NotFound
 from rest_framework.response import Response
 
 from mentorq_api.models import Ticket, Feedback
-from mentorq_api.serializers import TicketSerializer, TicketEditableSerializer, FeedbackSerializer, SlackDMSerializer
+from mentorq_api.serializers import TicketSerializer, TicketEditableSerializer, FeedbackSerializer, \
+    FeedbackEditableSerializer, SlackDMSerializer
+
 
 
 class LCSAuthenticatedMixin:
     def initial(self, request, *args, **kwargs):
         if not request.user.is_authenticated:
             raise NotAuthenticated
-        # the lcs credentials (token) are given to lcs-client to obtain a lcs user
-        lcs_user = request.user.get_lcs_user()
         # the lcs profile is stored in as arguments
-        self.kwargs["lcs_profile"] = lcs_user.profile()
-        self.kwargs["lcs_user"] = lcs_user
+
+        self.kwargs["lcs_profile"] = request.user.lcs_profile
         return super().initial(request, *args, **kwargs)
 
 
@@ -80,41 +81,64 @@ class TicketViewSet(LCSAuthenticatedMixin, mixins.CreateModelMixin, mixins.Retri
 
 # view for the /feedback endpoint
 class FeedbackViewSet(LCSAuthenticatedMixin, mixins.CreateModelMixin, mixins.RetrieveModelMixin, mixins.ListModelMixin,
-                      viewsets.GenericViewSet):
+                      mixins.UpdateModelMixin, viewsets.GenericViewSet):
     queryset = Feedback.objects.all()
     serializer_class = FeedbackSerializer
+    LEADERBOARD_DEFAULT_SIZE = 5
 
-    def create(self, request, *args, **kwargs):
-        referenced_ticket = Ticket.objects.get(id=request.data["id"])
-        if referenced_ticket.owner_email != kwargs["lcs_profile"]["email"]:
-            raise PermissionDenied
-        if referenced_ticket.status != Ticket.StatusType.CLOSED:
+    def get_serializer_class(self):
+        serializer_class = self.serializer_class
+        if self.request.method in ("PATCH", "PUT"):
+            serializer_class = FeedbackEditableSerializer
+        return serializer_class
+
+    def get_queryset(self):
+        lcs_profile = self.kwargs.get("lcs_profile")
+        user_roles = lcs_profile["role"]
+        queryset = super().get_queryset()
+        if not user_roles["director"]:
+            queryset = queryset.filter(ticket__owner_email=lcs_profile["email"])
+        return queryset
+
+#     def list(self, request, *args, **kwargs):
+#         if not kwargs["lcs_profile"]["role"]["director"]:
+#             raise PermissionDenied
+#         return super().list(request, *args, **kwargs)
+
+
+# # view for the /slack endpoint
+# class SlackViewSet(LCSAuthenticatedMixin, mixins.CreateModelMixin, viewsets.GenericViewSet):
+#     serializer_class = SlackDMSerializer
+
+#     def create(self, request, *args, **kwargs):
+#         lcs_user = self.kwargs.get("lcs_user")
+#         try:
+#             return Response(lcs_user.create_dm_link_to(self.request.data["other_email"]))
+#         except lcs_client.CredentialError as c:
+#             return Response(c.response)
+#         except lcs_client.RequestError as r:
+#             return Response(r.response)
+#         except lcs_client.InternalServerError as i:
+#             return Response(i.response)
+
+    def perform_create(self, serializer):
+        if serializer.validated_data["ticket"].owner_email != self.kwargs["lcs_profile"]["email"]:
+            raise NotFound
+        if serializer.validated_data["ticket"].status != Ticket.StatusType.CLOSED:
             raise PermissionDenied("Ticket must be closed to submit feedback")
-        return super().create(request, *args, **kwargs)
+        if not serializer.validated_data["ticket"].mentor_email:
+            raise PermissionDenied("Cannot leave feedback for a ticket with no mentor")
+        return super().perform_create(serializer)
 
-    def retrieve(self, request, *args, **kwargs):
-        if not kwargs["lcs_profile"]["role"]["director"]:
-            raise PermissionDenied
-        return super().retrieve(request, *args, **kwargs)
-
-    def list(self, request, *args, **kwargs):
-        if not kwargs["lcs_profile"]["role"]["director"]:
-            raise PermissionDenied
-        return super().list(request, *args, **kwargs)
-
-
-# view for the /slack endpoint
-class SlackViewSet(LCSAuthenticatedMixin, mixins.CreateModelMixin, viewsets.GenericViewSet):
-    serializer_class = SlackDMSerializer
-
-    def create(self, request, *args, **kwargs):
-        lcs_user = self.kwargs.get("lcs_user")
-        try:
-            return Response(lcs_user.create_dm_link_to(self.request.data["other_email"]))
-        except lcs_client.CredentialError as c:
-            return Response(c.response)
-        except lcs_client.RequestError as r:
-            return Response(r.response)
-        except lcs_client.InternalServerError as i:
-            return Response(i.response)
-
+    @action(methods=["get"], detail=False, url_path="leaderboard", url_name="leaderboard")
+    def get_leaderboard(self, request, *args, **kwargs):
+        limit = int(self.request.query_params.get("limit", FeedbackViewSet.LEADERBOARD_DEFAULT_SIZE))
+        queryset = Feedback.objects.values("ticket__mentor_email") \
+            .annotate(average_rating=Avg("rating")) \
+            .order_by("-average_rating")
+        queryset = queryset[:min(len(queryset), limit)]
+        leaderboard = []
+        for elem in queryset:
+            mentor = Ticket.objects.filter(mentor_email__exact=elem["ticket__mentor_email"])[0].mentor
+            leaderboard.append({"mentor": mentor, "average_rating": elem["average_rating"]})
+        return Response(leaderboard, content_type="application/json")
