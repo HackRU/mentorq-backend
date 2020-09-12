@@ -13,14 +13,15 @@ class TicketSerializer(serializers.HyperlinkedModelSerializer):
         request = self.context["request"]
         lcs_profile = request.user.lcs_profile
         if hasattr(obj, "feedback") and (lcs_profile["role"]["director"] or lcs_profile["email"] == obj.owner_email):
-            feedback = reverse("feedback-detail", args=[obj.feedback.pk], request=self.context["request"])
+            feedback = reverse(
+                "feedback-detail", args=[obj.feedback.pk], request=self.context["request"])
         return feedback
 
     class Meta:
         model = Ticket
         fields = [
             "id", "url", "owner_email", "mentor", "mentor_email", "status", "title",
-            "comment", "contact", "location", "created_datetime", "feedback"
+            "comment", "contact", "location", "created_datetime", "feedback", "name"
         ]
 
 
@@ -29,14 +30,15 @@ class TicketEditableSerializer(serializers.HyperlinkedModelSerializer):
         model = Ticket
         fields = [
             "id", "url", "owner_email", "mentor", "mentor_email", "status", "title",
-            "comment", "contact", "location", "created_datetime"
+            "comment", "contact", "location", "created_datetime", "name"
         ]
         read_only_fields = ["id", "url", "owner_email", "title", "comment", "contact", "location", "created_datetime",
-                            "claimed_datetime", "closed_datetime"]
+                            "claimed_datetime", "closed_datetime", "name"]
 
 
 class FeedbackSerializer(serializers.ModelSerializer):
-    ticket_url = serializers.HyperlinkedIdentityField(view_name="ticket-detail", source="url")
+    ticket_url = serializers.HyperlinkedIdentityField(
+        view_name="ticket-detail", source="url")
 
     class Meta:
         model = Feedback
@@ -44,7 +46,8 @@ class FeedbackSerializer(serializers.ModelSerializer):
 
 
 class FeedbackEditableSerializer(serializers.ModelSerializer):
-    ticket_url = serializers.HyperlinkedIdentityField(view_name="ticket-detail", source="url")
+    ticket_url = serializers.HyperlinkedIdentityField(
+        view_name="ticket-detail", source="url")
 
     class Meta:
         model = Feedback

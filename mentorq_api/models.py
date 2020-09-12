@@ -33,6 +33,8 @@ class Ticket(models.Model):
     claimed_datetime = models.DateTimeField(null=True, editable=False)
     # the datetime when this ticket was closed
     closed_datetime = models.DateTimeField(null=True, editable=False)
+    # the name of the user who posted the ticket
+    name = models.CharField(max_length=255, default="No name provided")
 
     class Meta:
         verbose_name = "Ticket"
@@ -66,7 +68,8 @@ class Rating(models.IntegerChoices):
 
 
 class Feedback(models.Model):
-    ticket = models.OneToOneField(to=Ticket, primary_key=True, on_delete=models.CASCADE)
+    ticket = models.OneToOneField(
+        to=Ticket, primary_key=True, on_delete=models.CASCADE)
     rating = models.SmallIntegerField(choices=Rating.choices)
     comments = models.CharField(max_length=255)
 
