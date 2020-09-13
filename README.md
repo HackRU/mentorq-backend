@@ -74,6 +74,7 @@ create a ticket with the following minimum request body<br>
     “comment”: “...”,<br>
     “contact”: “...”,<br>
     “location”: “..."<br>
+    "name": "..."<br>
 }<br>
 returns JSON with relevant extra fields added such as “id” and “created” as well as optional fields of “mentor” and “mentor_email”
 
