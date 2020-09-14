@@ -34,7 +34,7 @@ class Ticket(models.Model):
     # the datetime when this ticket was closed
     closed_datetime = models.DateTimeField(null=True, editable=False)
     # the name of the user who posted the ticket
-    name = models.CharField(max_length=255, default="No name provided")
+    name = models.CharField(max_length=255, blank=True)
 
     class Meta:
         verbose_name = "Ticket"
