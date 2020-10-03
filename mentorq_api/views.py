@@ -9,8 +9,7 @@ from rest_framework.response import Response
 
 from mentorq_api.models import Ticket, Feedback
 from mentorq_api.serializers import TicketSerializer, TicketEditableSerializer, FeedbackSerializer, \
-    FeedbackEditableSerializer, SlackDMSerializer
-
+    FeedbackEditableSerializer
 
 
 class LCSAuthenticatedMixin:
@@ -48,7 +47,8 @@ class TicketViewSet(LCSAuthenticatedMixin, mixins.CreateModelMixin, mixins.Retri
 
     def perform_create(self, serializer):
         if self.kwargs.get("lcs_profile")["email"] != serializer.validated_data["owner_email"]:
-            raise PermissionDenied("You cannot create a ticket on behalf of another user")
+            raise PermissionDenied(
+                "You cannot create a ticket on behalf of another user")
         super().perform_create(serializer)
 
     @action(methods=["get"], detail=False, url_path="stats", url_name="stats")
@@ -97,7 +97,8 @@ class FeedbackViewSet(LCSAuthenticatedMixin, mixins.CreateModelMixin, mixins.Ret
         user_roles = lcs_profile["role"]
         queryset = super().get_queryset()
         if not user_roles["director"]:
-            queryset = queryset.filter(ticket__owner_email=lcs_profile["email"])
+            queryset = queryset.filter(
+                ticket__owner_email=lcs_profile["email"])
         return queryset
 
 #     def list(self, request, *args, **kwargs):
@@ -121,24 +122,29 @@ class FeedbackViewSet(LCSAuthenticatedMixin, mixins.CreateModelMixin, mixins.Ret
 #         except lcs_client.InternalServerError as i:
 #             return Response(i.response)
 
+
     def perform_create(self, serializer):
         if serializer.validated_data["ticket"].owner_email != self.kwargs["lcs_profile"]["email"]:
             raise NotFound
         if serializer.validated_data["ticket"].status != Ticket.StatusType.CLOSED:
             raise PermissionDenied("Ticket must be closed to submit feedback")
         if not serializer.validated_data["ticket"].mentor_email:
-            raise PermissionDenied("Cannot leave feedback for a ticket with no mentor")
+            raise PermissionDenied(
+                "Cannot leave feedback for a ticket with no mentor")
         return super().perform_create(serializer)
 
     @action(methods=["get"], detail=False, url_path="leaderboard", url_name="leaderboard")
     def get_leaderboard(self, request, *args, **kwargs):
-        limit = int(self.request.query_params.get("limit", FeedbackViewSet.LEADERBOARD_DEFAULT_SIZE))
+        limit = int(self.request.query_params.get(
+            "limit", FeedbackViewSet.LEADERBOARD_DEFAULT_SIZE))
         queryset = Feedback.objects.values("ticket__mentor_email") \
             .annotate(average_rating=Avg("rating")) \
             .order_by("-average_rating")
         queryset = queryset[:min(len(queryset), limit)]
         leaderboard = []
         for elem in queryset:
-            mentor = Ticket.objects.filter(mentor_email__exact=elem["ticket__mentor_email"])[0].mentor
-            leaderboard.append({"mentor": mentor, "average_rating": elem["average_rating"]})
+            mentor = Ticket.objects.filter(
+                mentor_email__exact=elem["ticket__mentor_email"])[0].mentor
+            leaderboard.append(
+                {"mentor": mentor, "average_rating": elem["average_rating"]})
         return Response(leaderboard, content_type="application/json")
