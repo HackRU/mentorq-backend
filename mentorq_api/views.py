@@ -11,6 +11,8 @@ from mentorq_api.models import Ticket, Feedback
 from mentorq_api.serializers import TicketSerializer, TicketEditableSerializer, FeedbackSerializer, \
     FeedbackEditableSerializer
 
+import json
+
 
 class LCSAuthenticatedMixin:
     def initial(self, request, *args, **kwargs):
@@ -19,6 +21,7 @@ class LCSAuthenticatedMixin:
         # the lcs profile is stored in as arguments
 
         self.kwargs["lcs_profile"] = request.user.lcs_profile
+        self.kwargs["lcs_user"] = request.user.lcs_user
         return super().initial(request, *args, **kwargs)
 
 
@@ -74,9 +77,25 @@ class TicketViewSet(LCSAuthenticatedMixin, mixins.CreateModelMixin, mixins.Retri
             {"average_claimed_datetime_seconds": average_claimed_datetime,
              "average_closed_datetime_seconds": average_closed_datetime})
 
-    @action(methods=["post"], detail=True, url_path="slack-dm", url_name="slack-dm")
+    @action(methods=["get"], detail=True, url_path="slack-dm", url_name="slack-dm")
     def get_slack_dm(self, request, *args, **kwargs):
-        pass
+        self.object = self.get_object()
+        mentor_email = self.object.mentor_email
+        lcs_user = self.kwargs.get("lcs_user")
+        try:
+            return Response(lcs_user.create_dm_link_to(mentor_email))
+        except lcs_client.CredentialError as c:
+            statusCode = c.response.json()["statusCode"]
+            body = c.response.json()["body"]
+            return Response(body, status=statusCode)
+        except lcs_client.RequestError as r:
+            statusCode = r.response.json()["statusCode"]
+            body = r.response.json()["body"]
+            return Response(body, status=statusCode)
+        except lcs_client.InternalServerError as i:
+            statusCode = i.response.json()["statusCode"]
+            body = i.response.json()["body"]
+            return Response(body, status=statusCode)
 
 
 # view for the /feedback endpoint
