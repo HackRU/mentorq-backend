@@ -6,7 +6,7 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('mentorq_api', '0004_auto_20200809_2205'),
+        ('mentorq_api', '0005_merge_20201003_2120'),
     ]
 
     operations = [
