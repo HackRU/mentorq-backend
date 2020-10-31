@@ -86,6 +86,12 @@ use the id of ticket to get all the details about the ticket<br>
 update the ticket identified by id to change either “mentor”, “mentor_email” or “status” fields within the request body<br>
 
 <h4>
+/tickets/< id >/slack-dm
+</h4>
+[GET]<br>
+use the id of ticket to get slack DM link<br>
+
+<h4>
 /tickets/stats/
 </h4>
 [GET]<br>
