@@ -81,9 +81,17 @@ class TicketViewSet(LCSAuthenticatedMixin, mixins.CreateModelMixin, mixins.Retri
     def get_slack_dm(self, request, *args, **kwargs):
         self.object = self.get_object()
         mentor_email = self.object.mentor_email
+        owner_email = self.object.owner_email
         lcs_user = self.kwargs.get("lcs_user")
+        lcs_profile =  self.kwargs.get("lcs_profile")
+        request_email = lcs_profile["email"]
+        other_email = ""
+        if request_email == mentor_email:
+            other_email = owner_email
+        else: 
+            other_email = mentor_email
         try:
-            return Response(lcs_user.create_dm_link_to(mentor_email))
+            return Response(lcs_user.create_dm_link_to(other_email))
         except lcs_client.CredentialError as c:
             statusCode = c.response.json()["statusCode"]
             body = c.response.json()["body"]
