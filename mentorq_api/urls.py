@@ -1,16 +1,13 @@
 from django.urls import path, include
+from rest_framework.routers import DefaultRouter
 
-from mentorq_api.views import TicketList, TicketDetail, TicketStats
+from mentorq_api.views import TicketViewSet, FeedbackViewSet
+
+router = DefaultRouter()
+router.register(r"tickets", TicketViewSet)
+router.register(r"feedback", FeedbackViewSet)
 
 urlpatterns = [
-    # endpoint for Mentorq authentication
     path("auth/", include("mentorq_user.urls")),
-    # endpoint for getting all the tickets or adding a new ticket
-    path("tickets/", TicketList.as_view(), name="ticket_list"),
-
-    # endpoint for getting details on a particular ticket or updating a ticket
-    path("tickets/<int:pk>/", TicketDetail.as_view(), name="ticket_detail"),
-
-    # endpoint for getting stats on all the tickets
-    path("tickets/stats/", TicketStats.as_view(), name="ticket_stats")
+    path("", include(router.urls))
 ]
