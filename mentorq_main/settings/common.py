@@ -4,6 +4,7 @@ import pathlib
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = str(pathlib.Path(__file__).absolute().parent.parent.parent)
 
+
 # Application definition
 INSTALLED_APPS = [
     'django.contrib.admin',
@@ -105,6 +106,7 @@ CORS_ORIGIN_ALLOW_ALL = True
 CORS_ALLOW_CREDENTIALS = False
 
 CORS_ALLOW_METHODS = [
+    'DELETE',
     'GET',
     'OPTIONS',
     'PATCH',
