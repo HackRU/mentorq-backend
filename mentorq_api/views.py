@@ -1,7 +1,7 @@
 from datetime import timedelta
 
 import lcs_client
-from django.db.models import Avg
+from django.db.models import Avg, Q
 from rest_framework import mixins, viewsets
 from rest_framework.decorators import action
 from rest_framework.exceptions import PermissionDenied, NotAuthenticated, NotFound
@@ -44,8 +44,10 @@ class TicketViewSet(LCSAuthenticatedMixin, mixins.CreateModelMixin, mixins.Retri
         queryset = super().get_queryset()
         if not (user_roles["organizer"] or user_roles["director"] or user_roles["mentor"]):
             queryset = queryset.filter(owner_email=lcs_profile["email"])
-        if user_roles["mentor"]:
-            queryset = queryset.exclude(status=Ticket.StatusType.CLOSED)
+        if not (user_roles["organizer"] or user_roles["director"]):
+            # only remove closed tickets they did not create
+            queryset = queryset.exclude(status=Ticket.StatusType.CLOSED, ~Q(owner_email=lcs_profile["email"]))
+        
         return queryset
 
     def perform_create(self, serializer):
