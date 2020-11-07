@@ -46,8 +46,7 @@ class TicketViewSet(LCSAuthenticatedMixin, mixins.CreateModelMixin, mixins.Retri
             queryset = queryset.filter(owner_email=lcs_profile["email"])
         if not (user_roles["organizer"] or user_roles["director"]):
             # only remove closed tickets they did not create
-            queryset = queryset.exclude(status=Ticket.StatusType.CLOSED, ~Q(owner_email=lcs_profile["email"]))
-        
+            queryset = queryset.exclude(~Q(owner_email=lcs_profile["email"]), status=Ticket.StatusType.CLOSED)
         return queryset
 
     def perform_create(self, serializer):
