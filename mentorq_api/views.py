@@ -88,7 +88,7 @@ class TicketViewSet(LCSAuthenticatedMixin, mixins.CreateModelMixin, mixins.Retri
         other_email = ""
         if request_email == mentor_email:
             other_email = owner_email
-        else:
+        else: 
             other_email = mentor_email
         try:
             return Response(lcs_user.create_dm_link_to(other_email))
