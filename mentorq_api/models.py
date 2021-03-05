@@ -35,6 +35,10 @@ class Ticket(models.Model):
     closed_datetime = models.DateTimeField(null=True, editable=False)
     # the name of the user who posted the ticket
     owner = models.CharField(max_length=255, blank=True)
+    # True = ticket active / False = ticket not active
+    active = models.BooleanField(default=True)
+
+
 
     class Meta:
         verbose_name = "Ticket"
