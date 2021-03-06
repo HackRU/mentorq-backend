@@ -21,7 +21,7 @@ class TicketSerializer(serializers.HyperlinkedModelSerializer):
         model = Ticket
         fields = [
             "id", "url", "owner_email", "mentor", "mentor_email", "status", "title",
-            "comment", "contact", "location", "created_datetime", "feedback", "owner"
+            "comment", "contact", "location", "created_datetime", "feedback", "owner", "active"
         ]
 
 
@@ -30,7 +30,7 @@ class TicketEditableSerializer(serializers.HyperlinkedModelSerializer):
         model = Ticket
         fields = [
             "id", "url", "owner_email", "mentor", "mentor_email", "status", "title",
-            "comment", "contact", "location", "created_datetime", "owner"
+            "comment", "contact", "location", "created_datetime", "owner", "active"
         ]
         read_only_fields = ["id", "url", "owner_email", "title", "comment", "contact", "location", "created_datetime",
                             "claimed_datetime", "closed_datetime", "owner"]
