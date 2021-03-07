@@ -26,6 +26,7 @@ class Migration(migrations.Migration):
                 ('created_datetime', models.DateTimeField(auto_now_add=True)),
                 ('claimed_datetime', models.DateTimeField(editable=False, null=True)),
                 ('closed_datetime', models.DateTimeField(editable=False, null=True)),
+                ('active', models.BooleanField(editable=False, null=True)),
             ],
             options={
                 'verbose_name': 'Ticket',
