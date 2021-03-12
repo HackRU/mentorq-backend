@@ -92,6 +92,7 @@ class TicketViewSet(LCSAuthenticatedMixin, mixins.CreateModelMixin, mixins.Retri
                  "Open tickets": tickets_open,
                  "Claimed tickets": tickets_claimed,
                  "Closed Tickets": tickets_closed,
+                 "Closed Tickets": tickets_closed,
                  "Number of mentors": number_of_mentors,
                  "Number of users": number_of_users,
                  "Average Rating": Feedback.objects.all().aggregate(Avg('rating'))})
