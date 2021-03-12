@@ -1,11 +1,12 @@
 from datetime import timedelta
 
 import lcs_client
-from django.db.models import Avg, Q
+from django.db.models import Avg
 from rest_framework import mixins, viewsets
 from rest_framework.decorators import action
 from rest_framework.exceptions import PermissionDenied, NotAuthenticated, NotFound
 from rest_framework.response import Response
+from django.db.models import Q
 
 from mentorq_api.models import Ticket, Feedback
 from mentorq_api.serializers import TicketSerializer, TicketEditableSerializer, FeedbackSerializer, \
@@ -44,9 +45,8 @@ class TicketViewSet(LCSAuthenticatedMixin, mixins.CreateModelMixin, mixins.Retri
         queryset = super().get_queryset()
         if not (user_roles["organizer"] or user_roles["director"] or user_roles["mentor"]):
             queryset = queryset.filter(owner_email=lcs_profile["email"])
-        if not (user_roles["organizer"] or user_roles["director"]):
-            # only remove closed tickets they did not create
-            queryset = queryset.exclude(~Q(owner_email=lcs_profile["email"]), status=Ticket.StatusType.CLOSED)
+        if user_roles["mentor"]:
+            queryset = queryset.exclude(status=Ticket.StatusType.CLOSED)
         return queryset
 
     def perform_create(self, serializer):
@@ -55,28 +55,52 @@ class TicketViewSet(LCSAuthenticatedMixin, mixins.CreateModelMixin, mixins.Retri
                 "You cannot create a ticket on behalf of another user")
         super().perform_create(serializer)
 
+    # Get stats about tickets
     @action(methods=["get"], detail=False, url_path="stats", url_name="stats")
     def get_stats(self, request, *args, **kwargs):
         roles = kwargs["lcs_profile"]["role"]
-        if not roles["director"]:
-            raise PermissionDenied
+
+        total_tickets = Ticket.objects.count();
 
         claimed_datetime_deltas = list(map(lambda ticket: ticket.claimed_datetime - ticket.created_datetime,
                                            Ticket.objects.exclude(claimed_datetime__isnull=True).only(
-                                               "created_datetime",
-                                               "claimed_datetime")))
+                                           "created_datetime",
+                                           "claimed_datetime")))
         num_of_claimed_datetime_deltas = len(claimed_datetime_deltas)
         closed_datetime_deltas = list(map(lambda ticket: ticket.closed_datetime - ticket.created_datetime,
-                                          Ticket.objects.exclude(closed_datetime__isnull=True).only("created_datetime",
-                                                                                                    "closed_datetime")))
+                                             Ticket.objects.exclude(closed_datetime__isnull=True).only("created_datetime",
+                                                                                                        "closed_datetime")))
         num_of_closed_datetime_deltas = len(closed_datetime_deltas)
         average_claimed_datetime = (sum(claimed_datetime_deltas, timedelta(
             0)) / num_of_claimed_datetime_deltas) if num_of_claimed_datetime_deltas > 0 else None
         average_closed_datetime = (sum(closed_datetime_deltas, timedelta(
             0)) / num_of_closed_datetime_deltas) if num_of_closed_datetime_deltas > 0 else None
+
+        #Stats for director
+        if roles["director"]:
+            tickets_open = Ticket.objects.filter(status="OPEN").count()
+            tickets_cancelled = Ticket.objects.filter(status="CANCELLED").count()
+            tickets_claimed = Ticket.objects.filter(status="CLAIMED").count()
+            tickets_closed = Ticket.objects.filter(status="CLOSED").count()
+            number_of_mentors = Ticket.objects.values('mentor_email').exclude(mentor_email='').distinct().count()
+            number_of_users = Ticket.objects.values('owner_email').exclude(owner_email="").distinct().count()
+
+            return Response(
+                {"average_claimed_datetime_seconds": average_claimed_datetime,
+                 "average_closed_datetime_seconds": average_closed_datetime,
+                 "Total tickets": total_tickets,
+                 "Open tickets": tickets_open,
+                 "Claimed tickets": tickets_claimed,
+                 "Closed Tickets": tickets_closed,
+                 "Number of mentors": number_of_mentors,
+                 "Number of users": number_of_users,
+                 "Average Rating": Feedback.objects.all().aggregate(Avg('rating'))})
+
+        #Stats for everyone
         return Response(
             {"average_claimed_datetime_seconds": average_claimed_datetime,
-             "average_closed_datetime_seconds": average_closed_datetime})
+             "average_closed_datetime_seconds": average_closed_datetime,
+             "Total tickets": total_tickets,})
 
     @action(methods=["get"], detail=True, url_path="slack-dm", url_name="slack-dm")
     def get_slack_dm(self, request, *args, **kwargs):
@@ -89,7 +113,7 @@ class TicketViewSet(LCSAuthenticatedMixin, mixins.CreateModelMixin, mixins.Retri
         other_email = ""
         if request_email == mentor_email:
             other_email = owner_email
-        else: 
+        else:
             other_email = mentor_email
         try:
             return Response(lcs_user.create_dm_link_to(other_email))
