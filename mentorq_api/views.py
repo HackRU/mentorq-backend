@@ -60,7 +60,7 @@ class TicketViewSet(LCSAuthenticatedMixin, mixins.CreateModelMixin, mixins.Retri
     def get_stats(self, request, *args, **kwargs):
         roles = kwargs["lcs_profile"]["role"]
 
-        total_tickets = Ticket.objects.count();
+        total_tickets = Ticket.objects.count()
 
         claimed_datetime_deltas = list(map(lambda ticket: ticket.claimed_datetime - ticket.created_datetime,
                                            Ticket.objects.exclude(claimed_datetime__isnull=True).only(
