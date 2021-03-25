@@ -153,6 +153,8 @@ Example feedback JSON schema -
     "comments": ...
 }
 ```
+
+
 #### /feedback/leaderboard?limit=\<number>
 **\[GET]**  
 Obtains a list of mentors with the highest average ratings (number of mentors must be specified)
@@ -166,3 +168,4 @@ Expects a JSON with following schema:
     ...
 ]
 ```
+
