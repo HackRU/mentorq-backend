@@ -14,17 +14,20 @@ class Migration(migrations.Migration):
         migrations.CreateModel(
             name='Ticket',
             fields=[
-                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
+                ('id', models.AutoField(auto_created=True,
+                                        primary_key=True, serialize=False, verbose_name='ID')),
                 ('owner_email', models.EmailField(max_length=254)),
                 ('mentor', models.CharField(blank=True, max_length=255)),
                 ('mentor_email', models.EmailField(blank=True, max_length=254)),
-                ('status', models.CharField(choices=[('OPEN', 'OPEN'), ('CLOSED', 'CLOSED'), ('CLAIMED', 'CLAIMED'), ('CANCELLED', 'CANCELLED')], default='OPEN', max_length=9)),
+                ('status', models.CharField(choices=[('OPEN', 'OPEN'), ('CLOSED', 'CLOSED'), (
+                    'CLAIMED', 'CLAIMED'), ('CANCELLED', 'CANCELLED')], default='OPEN', max_length=9)),
                 ('title', models.CharField(max_length=255)),
                 ('comment', models.CharField(blank=True, max_length=255)),
                 ('contact', models.CharField(max_length=255)),
                 ('location', models.CharField(max_length=255)),
                 ('created_datetime', models.DateTimeField(auto_now_add=True)),
-                ('claimed_datetime', models.DateTimeField(editable=False, null=True)),
+                ('claimed_datetime', models.DateTimeField(
+                    editable=False, null=True)),
                 ('closed_datetime', models.DateTimeField(editable=False, null=True)),
             ],
             options={
