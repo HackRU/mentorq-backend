@@ -64,26 +64,29 @@ class TicketViewSet(LCSAuthenticatedMixin, mixins.CreateModelMixin, mixins.Retri
 
         claimed_datetime_deltas = list(map(lambda ticket: ticket.claimed_datetime - ticket.created_datetime,
                                            Ticket.objects.exclude(claimed_datetime__isnull=True).only(
-                                           "created_datetime",
-                                           "claimed_datetime")))
+                                               "created_datetime",
+                                               "claimed_datetime")))
         num_of_claimed_datetime_deltas = len(claimed_datetime_deltas)
         closed_datetime_deltas = list(map(lambda ticket: ticket.closed_datetime - ticket.created_datetime,
-                                             Ticket.objects.exclude(closed_datetime__isnull=True).only("created_datetime",
-                                                                                                        "closed_datetime")))
+                                          Ticket.objects.exclude(Q(closed_datetime__isnull=True) | Q(active=False)).only("created_datetime",
+                                                                                                                         "closed_datetime")))
         num_of_closed_datetime_deltas = len(closed_datetime_deltas)
         average_claimed_datetime = (sum(claimed_datetime_deltas, timedelta(
             0)) / num_of_claimed_datetime_deltas) if num_of_claimed_datetime_deltas > 0 else None
         average_closed_datetime = (sum(closed_datetime_deltas, timedelta(
             0)) / num_of_closed_datetime_deltas) if num_of_closed_datetime_deltas > 0 else None
 
-        #Stats for director
+        # Stats for director
         if roles["director"]:
             tickets_open = Ticket.objects.filter(status="OPEN").count()
-            tickets_cancelled = Ticket.objects.filter(status="CANCELLED").count()
+            tickets_cancelled = Ticket.objects.filter(
+                status="CANCELLED").count()
             tickets_claimed = Ticket.objects.filter(status="CLAIMED").count()
             tickets_closed = Ticket.objects.filter(status="CLOSED").count()
-            number_of_mentors = Ticket.objects.values('mentor_email').exclude(mentor_email='').distinct().count()
-            number_of_users = Ticket.objects.values('owner_email').exclude(owner_email="").distinct().count()
+            number_of_mentors = Ticket.objects.values(
+                'mentor_email').exclude(mentor_email='').distinct().count()
+            number_of_users = Ticket.objects.values(
+                'owner_email').exclude(owner_email="").distinct().count()
 
             return Response(
                 {"average_claimed_datetime_seconds": average_claimed_datetime,
@@ -97,11 +100,11 @@ class TicketViewSet(LCSAuthenticatedMixin, mixins.CreateModelMixin, mixins.Retri
                  "Number of users": number_of_users,
                  "Average Rating": Feedback.objects.all().aggregate(Avg('rating'))})
 
-        #Stats for everyone
+        # Stats for everyone
         return Response(
             {"average_claimed_datetime_seconds": average_claimed_datetime,
              "average_closed_datetime_seconds": average_closed_datetime,
-             "Total tickets": total_tickets,})
+             "Total tickets": total_tickets, })
 
     @action(methods=["get"], detail=True, url_path="slack-dm", url_name="slack-dm")
     def get_slack_dm(self, request, *args, **kwargs):
@@ -109,7 +112,7 @@ class TicketViewSet(LCSAuthenticatedMixin, mixins.CreateModelMixin, mixins.Retri
         mentor_email = self.object.mentor_email
         owner_email = self.object.owner_email
         lcs_user = self.kwargs.get("lcs_user")
-        lcs_profile =  self.kwargs.get("lcs_profile")
+        lcs_profile = self.kwargs.get("lcs_profile")
         request_email = lcs_profile["email"]
         other_email = ""
         if request_email == mentor_email:
