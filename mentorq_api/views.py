@@ -45,7 +45,7 @@ class TicketViewSet(LCSAuthenticatedMixin, mixins.CreateModelMixin, mixins.Retri
         queryset = super().get_queryset()
         if not (user_roles["organizer"] or user_roles["director"] or user_roles["mentor"]):
             queryset = queryset.filter(owner_email=lcs_profile["email"])
-        if user_roles["mentor"]:
+        if user_roles["mentor"] and not (user_roles["director"]):
             queryset = queryset.exclude(status=Ticket.StatusType.CLOSED)
         return queryset
 
@@ -178,7 +178,6 @@ class FeedbackViewSet(LCSAuthenticatedMixin, mixins.CreateModelMixin, mixins.Ret
 #         except lcs_client.InternalServerError as i:
 #             return Response(i.response)
 
-
     def perform_create(self, serializer):
         if serializer.validated_data["ticket"].owner_email != self.kwargs["lcs_profile"]["email"]:
             raise NotFound
@@ -200,7 +199,7 @@ class FeedbackViewSet(LCSAuthenticatedMixin, mixins.CreateModelMixin, mixins.Ret
         leaderboard = []
         for elem in queryset:
             mentor = Ticket.objects.filter(
-                mentor_email__exact=elem["ticket__mentor_email"])[0].mentor
+                mentor_email__exact=elem["ticket__mentor_email"])[0].mentor_email
             leaderboard.append(
                 {"mentor": mentor, "average_rating": elem["average_rating"]})
         return Response(leaderboard, content_type="application/json")
