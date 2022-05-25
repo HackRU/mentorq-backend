@@ -8,7 +8,7 @@ djangorestframework-simplejwt==4.4.0
 idna==2.10
 lcs-client==2.0.0
 psycopg2==2.8.6
-PyJWT==1.7.1
+PyJWT==2.4.0
 python-dateutil==2.8.1
 pytz==2020.1
 requests==2.24.0
