@@ -1,4 +1,4 @@
-The backend was made with [Django](https://www.djangoproject.com/)
+The backend was made with [Django](https://www.djangoproject.com/) and hosted on [Heroku](https://dashboard.heroku.com/)
 
 # Setting up the backend
 - Ensure you have python3 installed on your machine
