@@ -78,3 +78,13 @@ class Feedback(models.Model):
     class Meta:
         verbose_name = "Feedback"
         verbose_name_plural = "Feedback"
+
+class MentorFeedback(models.Model):
+    ticket = models.OneToOneField(
+        to=Ticket, primary_key=True, on_delete=models.CASCADE)
+    mentor_rating = models.SmallIntegerField(choices=Rating.choices)
+    mentor_comments = models.CharField(max_length=255)
+
+    class Meta:
+        verbose_name = "Mentor Feedback"
+        verbose_name_plural = "Mentor Feedback"

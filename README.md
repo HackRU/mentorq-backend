@@ -154,6 +154,56 @@ Example feedback JSON schema -
 }
 ```
 
+#### /mentorfeedback
+Fields:  
+id = id of the ticket associated with feedback  
+ticket_url = the direct url to the referenced ticket  
+mentor_rating = the numerical rating of the mentor's feedback  
+mentor_comments = any additional mentor comments part of the feedback  
+
+**\[GET]**  
+**REQUIRED: director permissions in LCS**  
+Obtain the list of all the mentor feedbacks submitted  
+Returns a list of JSON objects, each representing a mentor feedback.  
+Example feedback JSON schema -
+```
+{
+    "ticket": ...,
+    "ticket_url": ...,
+    "mentor_rating": ...,
+    "mentor_comments": ...
+}
+```
+
+
+**\[POST]**  
+**REQUIRED: mentor of ticket and must be the same**  
+Creates a mentor feedback  
+Expects a JSON with following schema:
+```
+{
+    "ticket": ...,
+    "mentor_rating": ...,
+    "mentor_comments": ...
+}
+```
+
+
+#### /mentorfeedback/\<ticket_id>
+**\[GET]**  
+**REQUIRED: director permissions in LCS**  
+Obtains the details about a specific feedback, identified by the closed ticket's id  
+Returns the JSON for a feedback
+Example feedback JSON schema - 
+```
+{
+    "ticket": ...,
+    "ticket_url": ...,
+    "mentor_rating": ...,
+    "mentor_comments": ...
+}
+```
+
 
 #### /feedback/leaderboard?limit=\<number>
 **\[GET]**  

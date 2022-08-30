@@ -8,12 +8,11 @@ from rest_framework.exceptions import PermissionDenied, NotAuthenticated, NotFou
 from rest_framework.response import Response
 from django.db.models import Q
 
-from mentorq_api.models import Ticket, Feedback
+from mentorq_api.models import Ticket, Feedback, MentorFeedback
 from mentorq_api.serializers import TicketSerializer, TicketEditableSerializer, FeedbackSerializer, \
-    FeedbackEditableSerializer
+    FeedbackEditableSerializer, MentorFeedbackSerializer, MentorFeedbackEditableSerializer
 
 import json
-
 
 class LCSAuthenticatedMixin:
     def initial(self, request, *args, **kwargs):
@@ -162,7 +161,6 @@ class FeedbackViewSet(LCSAuthenticatedMixin, mixins.CreateModelMixin, mixins.Ret
 #             raise PermissionDenied
 #         return super().list(request, *args, **kwargs)
 
-
 # # view for the /slack endpoint
 # class SlackViewSet(LCSAuthenticatedMixin, mixins.CreateModelMixin, viewsets.GenericViewSet):
 #     serializer_class = SlackDMSerializer
@@ -203,3 +201,37 @@ class FeedbackViewSet(LCSAuthenticatedMixin, mixins.CreateModelMixin, mixins.Ret
             leaderboard.append(
                 {"mentor": mentor, "average_rating": elem["average_rating"]})
         return Response(leaderboard, content_type="application/json")
+
+class MentorFeedbackViewSet(LCSAuthenticatedMixin, mixins.CreateModelMixin, mixins.RetrieveModelMixin, mixins.ListModelMixin,
+                            mixins.UpdateModelMixin, viewsets.GenericViewSet):
+    queryset = MentorFeedback.objects.all()
+    serializer_class = MentorFeedbackSerializer
+    LEADERBOARD_DEFAULT_SIZE = 5
+
+    def get_serializer_class(self):
+        serializer_class = self.serializer_class
+        if self.request.method in ("PATCH", "PUT"):
+            serializer_class = MentorFeedbackEditableSerializer
+        return serializer_class
+
+    @action(methods=["get"], detail=True, url_path="mentor", url_name="slack-dm")
+    def get_queryset(self):
+        lcs_profile = self.kwargs.get("lcs_profile")
+        user_roles = lcs_profile["role"]
+        if not user_roles["mentor"] and not user_roles["director"]:
+            return []
+        queryset = super().get_queryset()
+        if not user_roles["director"]:
+            queryset = queryset.filter(
+                ticket__mentor_email=lcs_profile["email"])
+        return queryset
+
+    def perform_create(self, serializer):
+        if serializer.validated_data["ticket"].mentor_email != self.kwargs["lcs_profile"]["email"]:
+            raise NotFound
+        #if serializer.validated_data["ticket"].status != Ticket.StatusType.CLOSED:
+        #    raise PermissionDenied("Ticket must be closed to submit feedback")
+        #if not serializer.validated_data["ticket"].mentor_email:
+        #    raise PermissionDenied(
+        #        "Cannot leave feedback for a ticket with no mentor")
+        return super().perform_create(serializer)
