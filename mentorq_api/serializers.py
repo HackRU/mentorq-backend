@@ -1,7 +1,7 @@
 from rest_framework import serializers
 from rest_framework.reverse import reverse
 
-from mentorq_api.models import Ticket, Feedback
+from mentorq_api.models import Ticket, Feedback, MentorFeedback
 
 
 # returns the relevant fields from a Ticket object
@@ -52,4 +52,22 @@ class FeedbackEditableSerializer(serializers.ModelSerializer):
     class Meta:
         model = Feedback
         fields = ["ticket", "ticket_url", "rating", "comments"]
+        read_only_fields = ["ticket", "ticket_url"]
+
+
+class MentorFeedbackSerializer(serializers.ModelSerializer):
+    ticket_url = serializers.HyperlinkedIdentityField(
+        view_name="ticket-detail", source="url")
+   
+    class Meta:
+        model = MentorFeedback
+        fields = ["ticket", "ticket_url", "mentor_rating", "mentor_comments"]
+
+class MentorFeedbackEditableSerializer(serializers.ModelSerializer):
+    ticket_url = serializers.HyperlinkedIdentityField(
+        view_name="ticket-detail", source="url")
+   
+    class Meta:
+        model = MentorFeedback
+        fields = ["ticket", "ticket_url", "mentor_rating", "mentor_comments"]
         read_only_fields = ["ticket", "ticket_url"]
