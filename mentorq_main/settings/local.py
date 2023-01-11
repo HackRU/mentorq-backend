@@ -11,6 +11,7 @@ SECRET_KEY = "placeholder_secret_key"
 ALLOWED_HOSTS = ["*"]
 
 STATIC_URL = "/static/"
+STATIC_ROOT = os.path.join(BASE_DIR, 'static')
 
 SIMPLE_JWT = {
     "ACCESS_TOKEN_LIFETIME": timedelta(days=1)
