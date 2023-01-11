@@ -2,7 +2,8 @@ import os
 import pathlib
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
-BASE_DIR = str(pathlib.Path(__file__).absolute().parent.parent.parent)
+# BASE_DIR = str(pathlib.Path(__file__).absolute().parent.parent.parent)
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 
 # Application definition
