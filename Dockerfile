@@ -20,4 +20,4 @@ COPY . .
 # RUN python manage.py migrate
 
 # run the Django server
-ENTRYPOINT ["python", "manage.py", "runserver", "0.0.0.0:8000"]
+# ENTRYPOINT ["python", "manage.py", "runserver", "0.0.0.0:8000"]
