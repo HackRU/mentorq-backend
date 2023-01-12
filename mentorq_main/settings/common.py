@@ -54,10 +54,12 @@ WSGI_APPLICATION = 'mentorq_main.wsgi.application'
 
 # Database
 DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
-    }
+    #'default': {
+    #    'ENGINE': 'django.db.backends.sqlite3',
+    #    'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
+    #}
+ 
+    'default': env.db('DATABASE_URL'),
 }
 
 # custom authentication backend for Mentorq
