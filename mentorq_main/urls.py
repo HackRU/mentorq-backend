@@ -11,6 +11,6 @@ urlpatterns = [
 
 # if the environment var LCS_DEV is set, it will use the dev lcs endpoint
 # doesn't matter what the actual value is, it just has to be set
-#if os.getenv("LCS_DEV"):
-#    set_testing(True)
-#    print("Set testing mode successfully")
+if os.getenv("LCS_DEV"):
+    set_testing(True)
+    print("Set testing mode successfully")
