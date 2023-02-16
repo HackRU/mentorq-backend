@@ -1,6 +1,6 @@
 from .common import *
-import django_heroku
+#import django_heroku
 
 DEBUG = False
 
-django_heroku.settings(locals())
+#django_heroku.settings(locals())
