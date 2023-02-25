@@ -2,7 +2,7 @@ language: python
 
 #Set up the basic environment to be python
 python:
-  - "3.6.6"
+  - "3.11.2"
 
 install:
     #Install all the requirements
