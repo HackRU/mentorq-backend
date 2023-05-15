@@ -16,8 +16,8 @@ RUN pip install --no-cache-dir -r requirements.txt
 COPY . .
 
 # run the Django migrations
-RUN python manage.py makemigrations
-RUN python manage.py migrate
+# RUN python manage.py makemigrations
+# RUN python manage.py migrate
 
 # run the Django server
-ENTRYPOINT ["python", "manage.py", "runserver", "0.0.0.0:8000"]
+# ENTRYPOINT ["python", "manage.py", "runserver", "0.0.0.0:8000"]
