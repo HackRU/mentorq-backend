@@ -1,5 +1,7 @@
 The backend was made with [Django](https://www.djangoproject.com/)
 
+Hosted on [AWS EC2](https://aws.amazon.com/ec2/) through [Appliku](https://appliku.com/)
+
 # Setting up the backend
 - Ensure you have python3 installed on your machine
     - Run pip3 install -r requirements.txt
